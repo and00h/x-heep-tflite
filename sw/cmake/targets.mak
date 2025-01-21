@@ -38,6 +38,7 @@ build/Makefile : CMakeLists.txt ${CMAKE_DIR}/riscv.cmake
 			-DCOMPILER_PREFIX:STRING=${COMPILER_PREFIX} \
 			-DCOMPILER_FLAGS:STRING=${COMPILER_FLAGS}\
 			-DVERBOSE:STRING=${VERBOSE} \
+			-DUSE_TFLM:STRING=${USE_TFLM} \
 		    ../ 
 
 clean:

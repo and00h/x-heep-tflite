@@ -42,6 +42,8 @@ SOURCE 	 ?= $(".")
 
 VERBOSE ?= false
 
+USE_TFLM ?= false
+
 # riscv toolchain install path
 RISCV                      ?= ~/.riscv
 RISCV_EXE_PREFIX           = $(RISCV)/bin/${COMPILER_PREFIX}elf-
