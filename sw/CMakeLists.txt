@@ -342,6 +342,15 @@ if(${PROJECT} MATCHES "freertos")
   FetchContent_MakeAvailable(freertos_kernel)
 endif()
 
+# TFLiteMicro configuration
+FetchContent_Declare( tflm
+  GIT_REPOSITORY      "https://github.com/tensorflow/tflite-micro.git"
+  GIT_TAG             10ebaab9fcb796319df88dbf0db1a05d13a812c5
+  PATCH_COMMAND       ${CMAKE_COMMAND} -E copy ${ROOT_PROJECT}tflite_micro/CMakeLists_tflm.txt <SOURCE_DIR>/CMakeLists.txt
+)
+
+FetchContent_MakeAvailable(tflm)
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Set CMAKE flags
 
