@@ -343,13 +343,18 @@ if(${PROJECT} MATCHES "freertos")
 endif()
 
 # TFLiteMicro configuration
-FetchContent_Declare( tflm
+FetchContent_Declare( tflite_micro
   GIT_REPOSITORY      "https://github.com/tensorflow/tflite-micro.git"
   GIT_TAG             10ebaab9fcb796319df88dbf0db1a05d13a812c5
-  PATCH_COMMAND       ${CMAKE_COMMAND} -E copy ${ROOT_PROJECT}tflite_micro/CMakeLists_tflm.txt <SOURCE_DIR>/CMakeLists.txt
+  SOURCE_DIR          "${ROOT_PROJECT}tflite_micro/tflite-micro"
+  PATCH_COMMAND       ${CMAKE_COMMAND} -E copy ${ROOT_PROJECT}tflite_micro/CMakeLists_tflm.txt <SOURCE_DIR>/CMakeLists.txt 
+                      && git apply --unsafe-paths --directory <SOURCE_DIR> ${ROOT_PROJECT}tflite_micro/00_fix_wrong_source_files_list_tflm_tree.patch
 )
 
-FetchContent_MakeAvailable(tflm)
+
+if(${USE_TFLM} MATCHES "true")
+  FetchContent_MakeAvailable(tflite_micro)
+endif()
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Set CMAKE flags
@@ -424,6 +429,10 @@ target_include_directories(${MAINFILE}.elf PUBLIC ${h_dir_list_})
 #target_link_libraries(${MAINFILE}.elf runtime)
 if(${PROJECT} MATCHES "freertos")
   target_link_libraries(${MAINFILE}.elf freertos_kernel)
+endif()
+
+if(${USE_TFLM} MATCHES "true")
+  target_link_libraries(${MAINFILE}.elf tflite_micro)
 endif()
 
 # Setting-up the linker

@@ -37,6 +37,7 @@ build/Makefile : CMakeLists.txt ${CMAKE_DIR}/riscv.cmake
 			-DCOMPILER:STRING=${COMPILER} \
 			-DCOMPILER_PREFIX:STRING=${COMPILER_PREFIX} \
 			-DVERBOSE:STRING=${VERBOSE} \
+			-DUSE_TFLM:STRING=${USE_TFLM} \
 		    ../ 
 
 clean:
