@@ -1,15 +1,13 @@
 #include "lenet5.h"
+#include "lenet5_example_image_float32.h"
 #include "core_v_mini_mcu.h"
 #include "x-heep.h"
-
+#include "tensorflow/lite/core/c/common.h"
 extern "C"
 {
 #include <stdio.h>
 #include <stdlib.h>
 }
-
-#define PRINTF_IN_SIM 1
-#define TARGET_SIM 1
 
 #if TARGET_SIM && PRINTF_IN_SIM
 #define PRINTF(fmt, ...) printf(fmt, ##__VA_ARGS__)
@@ -19,14 +17,18 @@ extern "C"
 #define PRINTF(...)
 #endif
 
+float out_data[10] = {0.0};
+
 int main()
 {
-    InitializeModel();
+    volatile TfLiteStatus s = InitializeModel();
+    if (s != kTfLiteOk)
+    {
+        PRINTF("Failed to initialize model\n\r");
+        return -1;
+    }
 
-    float data[32 * 32] = {0.0};
-    float out_data[10] = {0.0};
-
-    Infer(data, sizeof(data), out_data, sizeof(out_data));
+    Infer(image_bin, image_size * sizeof(float), out_data, 10 * sizeof(float));
     for (int i = 0; i < 10; i++)
     {
         PRINTF("out_data[%d]: %f\n\r", i, out_data[i]);
