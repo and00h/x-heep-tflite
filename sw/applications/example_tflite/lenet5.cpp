@@ -9,13 +9,13 @@
 
 #include "lenet5_tflite_model.h"
 
-using LenetOpResolver = tflite::MicroMutableOpResolver<7>;
+using LenetOpResolver = tflite::MicroMutableOpResolver<9>;
 
 const tflite::Model *model;
 LenetOpResolver op_resolver;
 tflite::MicroInterpreter *interpreter;
 
-constexpr int kTensorArenaSize = 0x4000;
+constexpr int kTensorArenaSize = 0x8000;
 uint8_t tensor_arena[kTensorArenaSize];
 
 namespace
@@ -29,6 +29,8 @@ namespace
         TF_LITE_ENSURE_STATUS(op_resolver.AddReshape());
         TF_LITE_ENSURE_STATUS(op_resolver.AddSoftmax());
         TF_LITE_ENSURE_STATUS(op_resolver.AddLogistic());
+        TF_LITE_ENSURE_STATUS(op_resolver.AddQuantize());
+        TF_LITE_ENSURE_STATUS(op_resolver.AddDequantize());
         return kTfLiteOk;
     }
 }
