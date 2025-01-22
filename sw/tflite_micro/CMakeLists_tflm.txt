@@ -131,16 +131,14 @@ add_custom_command(
     OUTPUT ${TFLITE_THIRD_PARTY_SOURCES} ${TFLITE_SIGNAL_SOURCES} ${TFLITE_TENSORFLOW_SOURCES}
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/tools/project_generation/create_tflm_tree.py --makefile_option "TARGET=riscv32_generic" --rename_cc_to_cpp "${TFLITE_RISCV_TREE}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/tools/project_generation/create_tflm_tree.py
 )
 
-#add_custom_target(tflm_tree DEPENDS ${TFLITE_THIRD_PARTY_SOURCES} ${TFLITE_SIGNAL_SOURCES} ${TFLITE_TENSORFLOW_SOURCES})
+add_custom_target(tflm_tree DEPENDS ${TFLITE_THIRD_PARTY_SOURCES} ${TFLITE_SIGNAL_SOURCES} ${TFLITE_TENSORFLOW_SOURCES})
 # Compiler flags
 set(TFLITE_COMMON_FLAGS
     -fno-unwind-tables -fno-exceptions -ffunction-sections -fdata-sections -fmessage-length=0
     -DTF_LITE_STATIC_MEMORY
     -DTF_LITE_DISABLE_X86_NEON
-    -DTF_LITE_MCU_DEBUG_LOG
     -DTF_LITE_USE_GLOBAL_CMATH_FUNCTIONS
     -DTF_LITE_USE_GLOBAL_MIN
     -DTF_LITE_USE_GLOBAL_MAX
@@ -149,7 +147,7 @@ set(TFLITE_COMMON_FLAGS
     -fno-delete-null-pointer-checks
     -fomit-frame-pointer
     -fno-rtti -fno-exceptions
-    -mabi=ilp32 -mcmodel=medany
+    -march=${CMAKE_SYSTEM_PROCESSOR} -mabi=ilp32 -mcmodel=medany
     -w -Os)
 
 set(TFLM_INCLUDE_DIRECTORIES ${TFLITE_RISCV_TREE}
@@ -161,11 +159,11 @@ set(TFLM_INCLUDE_DIRECTORIES ${TFLITE_RISCV_TREE}
 )
 
 # Include directories
-include_directories(${TFLM_INCLUDE_DIRECTORIES} ${CMAKE_CURRENT_SOURCE_DIR}/)
+# include_directories(${TFLM_INCLUDE_DIRECTORIES} ${CMAKE_CURRENT_SOURCE_DIR}/)
 # Automatically find all source files in the tflm folder
-add_library(tflite_micro STATIC)
+add_library(tflite_micro STATIC ${TFLITE_THIRD_PARTY_SOURCES} ${TFLITE_SIGNAL_SOURCES} ${TFLITE_TENSORFLOW_SOURCES} ${TFLITE_XHEEP_SOURCES})
+add_dependencies(tflite_micro tflm_tree)
+target_include_directories(tflite_micro PUBLIC ${TFLM_INCLUDE_DIRECTORIES} ${CMAKE_CURRENT_SOURCE_DIR}/)
 set_source_files_properties(${TFLITE_THIRD_PARTY_SOURCES} ${TFLITE_SIGNAL_SOURCES} ${TFLITE_TENSORFLOW_SOURCES} ${TFLITE_XHEEP_SOURCES} PROPERTIES GENERATED TRUE)
-target_sources(tflite_micro PRIVATE ${TFLITE_THIRD_PARTY_SOURCES} ${TFLITE_SIGNAL_SOURCES} ${TFLITE_TENSORFLOW_SOURCES} ${TFLITE_XHEEP_SOURCES})
 target_compile_options(tflite_micro PRIVATE ${TFLITE_COMMON_FLAGS})
 target_compile_features(tflite_micro PRIVATE cxx_std_17)
-target_include_directories(tflite_micro PUBLIC ${TFLM_INCLUDE_DIRECTORIES})

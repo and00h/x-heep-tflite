@@ -19,7 +19,6 @@ cmake_minimum_required(VERSION 3.15)
 
 # Include to fetch any vendorised repo (e.g. FreeRTOS)
 include(FetchContent)
-
 # Add some colors!
 if(NOT WIN32)
   string(ASCII 27 Esc)
@@ -346,7 +345,6 @@ endif()
 FetchContent_Declare( tflite_micro
   GIT_REPOSITORY      "https://github.com/tensorflow/tflite-micro.git"
   GIT_TAG             10ebaab9fcb796319df88dbf0db1a05d13a812c5
-  SOURCE_DIR          "${ROOT_PROJECT}tflite_micro/tflite-micro"
   PATCH_COMMAND       ${CMAKE_COMMAND} -E copy ${ROOT_PROJECT}tflite_micro/CMakeLists_tflm.txt <SOURCE_DIR>/CMakeLists.txt 
                       && git apply --unsafe-paths --directory <SOURCE_DIR> ${ROOT_PROJECT}tflite_micro/00_fix_wrong_source_files_list_tflm_tree.patch
 )
@@ -431,8 +429,16 @@ if(${PROJECT} MATCHES "freertos")
   target_link_libraries(${MAINFILE}.elf freertos_kernel)
 endif()
 
+set(TFLM_INCLUDES "")
 if(${USE_TFLM} MATCHES "true")
   target_link_libraries(${MAINFILE}.elf tflite_micro)
+  get_target_property(TFLM_INCLUDES tflite_micro INCLUDE_DIRECTORIES)
+  target_include_directories(${MAINFILE}.elf PUBLIC ${TFLM_INCLUDES})
+  foreach(INC ${TFLM_INCLUDES})
+    message( "${Magenta}TFLM Includes: ${INC}${ColourReset}")
+    set(INCLUDE_FOLDERS "${INCLUDE_FOLDERS} -I ${INC}")
+  endforeach()    
+  message( "${Magenta}Includes: ${INCLUDE_FOLDERS}${ColourReset}")
 endif()
 
 # Setting-up the linker
@@ -453,6 +459,13 @@ SET(CMAKE_EXE_LINKER_FLAGS  "-T ${LINKER_SCRIPT}  \
                             -ffunction-sections -fdata-sections -specs=nano.specs")
 message( "${Magenta}Lib Folder RISCV-GCC: ${RISCV}/${COMPILER_PREFIX}elf/lib${ColourReset}")
 
+if(${USE_TFLM} MATCHES "true")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fno-unwind-tables -fomit-frame-pointer -DTF_LITE_STATIC_MEMORY \
+    -DTF_LITE_DISABLE_X86_NEON \
+    -DTF_LITE_USE_GLOBAL_CMATH_FUNCTIONS \
+    -DTF_LITE_USE_GLOBAL_MIN \
+    -DTF_LITE_USE_GLOBAL_MAX")
+endif()
 if (${VERBOSE} MATCHES "true")
  SET(CMAKE_VERBOSE_MAKEFILE ON)
 else()
